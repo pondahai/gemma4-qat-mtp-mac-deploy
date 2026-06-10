@@ -18,7 +18,7 @@
 
 ## 🛠 一鍵初始化與部署 (From Scratch)
 
-我們在資料夾中生成了一個 [init_setup.sh](file:///Volumes/DATA/Downloads/gemma-4-qat-mtp-setup/init_setup.sh) 腳本，支持從無到有一鍵完成所有環境配置。
+我們在資料夾中生成了一個 [init_setup.sh](file:///Volumes/DATA/Downloads/gemma4-qat-mtp-mac-deploy/init_setup.sh) 腳本，支持從無到有一鍵完成所有環境配置。
 
 ### 部署步驟
 1. 確保您的 Mac 已安裝 **Homebrew**（若未安裝，腳本會提示引導）。
@@ -54,13 +54,14 @@ Gemma 4 的預設上下文（Context Length）非常巨大（262k）。如果啟
 * **優化解法**：在啟動指令中加上限制 `-c 4096`，將上下文長度固定在 4096，可大幅降低記憶體佔用至約 10.5 GB，從而防止 16GB 的 Mac 因記憶體不足進入 Severe Swap 狀態而當機。
 
 ### 🎙 語音辨識（Audio Input）實驗性問題記錄
-在本次部署中，我們成功使伺服器加載多模態投影並順利吃進語音檔案，但**語音識別出的文字內容目前仍然不正確**。
+在本次部署中，我們成功使伺服器加載多模態投影並順利吃進語音檔案，但**語音識別與內容理解上目前仍然不夠正確**。
 * **當前狀態**：
   * 後端日誌顯示音訊解碼與特徵處理完全成功：`srv process_chun: audio processed in 23 ms`。
   * 前端已實現將音訊包裝成符合 OpenAI 標準的 `input_audio` 格式並自動注入 Gemma 4 所需的 `<|audio|>` 預留標記。
   * **但模型給出的回答在內容理解上仍存在偏差或錯誤**。
-* **原因分析**：這是因為 `llama.cpp` 對於最新 Gemma 4 語音投影器（Voice Projector）的底層對齊算法仍在**高度實驗階段（Experimental Stage）**，對於部分 PCM 波形特徵的對應尚未完善。
-* **後續追蹤**：這部分問題為後端底層開源庫的架構限制，我們暫時擱置，靜待 `llama.cpp` 官方未來的更新與演進，屆時只需再次執行 `./init_setup.sh` 更新並編譯 `llama.cpp` 即可。
+* **原因分析**：這是因為 `llama.cpp` 對於最新 Gemma 4 語音投影器（Voice Projector）的底層對齊與音訊表徵處理仍在**高度實驗階段（Experimental Stage）**，對於部分 PCM 波訊特徵的映射尚未完善。
+* **測試策略 (本專案狀態)**：我們決定**暫時擱置語音輸入的測試，待 `llama.cpp` 官方發布整合此功能的正式穩定 Release 版本**後，再進行後續的語音測試。
+* **後續更新方法**：屆時發布後，只需在終端機再次執行 `./init_setup.sh` 下載更新並編譯最新的 `llama.cpp` 即可。
 
 ---
 
@@ -74,9 +75,10 @@ Gemma 4 的預設上下文（Context Length）非常巨大（262k）。如果啟
 3. 將端口設定為 `http://localhost:8080` 並啟用連線，即可透過 LM Studio 的聊天介面與該架構對話。
 
 #### 方法 B：使用我們生成的網頁沙盒 (Multimodal Sandbox)
-1. 在工作區中進入 [gemma-4-multimodal-chat](file:///Volumes/DATA/Downloads/gemma-4-multimodal-chat) 資料夾。
-2. 執行 `./start.sh` 以在 `http://localhost:3001` 啟動前端網頁。
-3. 在瀏覽器打開此網頁，即可進行包含文字對話、圖片上傳、麥克風錄音在內的多模態測試！此服務與網頁伺服器皆已綁定 `0.0.0.0`，因此局域網內的手機或其它電腦也能直接訪問連線。
+1. 在工作區中進入 [web-sandbox](file:///Volumes/DATA/Downloads/gemma4-qat-mtp-mac-deploy/web-sandbox) 資料夾。
+2. 執行 `./start.sh` 以在 `http://127.0.0.1:3001` 啟動前端網頁。
+3. 在瀏覽器打開此網頁，即可進行包含文字對話、圖片上傳、麥克風錄音在內的多模態測試！
+   * **特色**：網頁端會自動偵測連入主機的 Hostname/IP（包括區網設備），無須使用者手動填寫 API 伺服器位址即可一鍵連線，極大地方便了區網其他電腦或手機設備測試。
 
 ### 如何關閉模型服務？
 當您使用完畢，希望釋放系統記憶體時，請在終端機中執行：
