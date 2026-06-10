@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gemma 4 Unified Multimodal Sandbox</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="index.css">
+</head>
+<body class="dark-mode">
+  <div class="glass-bg"></div>
+  <div class="app-container">
+    <header class="app-header">
+      <div class="logo-container">
+        <span class="logo-badge">Unified</span>
+        <h1>Gemma 4 Multimodal Sandbox</h1>
+      </div>
+      <div class="server-config">
+        <label for="server-url">伺服器位址:</label>
+        <input type="text" id="server-url" value="http://localhost:8080" placeholder="http://localhost:8080">
+        <span class="status-indicator connected" id="status-dot"></span>
+        <span id="status-text">連線中...</span>
+      </div>
+    </header>
+
+    <main class="app-body">
+      <!-- 左邊：聊天區與媒體上傳區 -->
+      <section class="left-section">
+        <div class="chat-container">
+          <div class="chat-messages" id="chat-messages">
+            <div class="message system-message">
+              <div class="message-content">
+                <strong>系統</strong>：您好！此沙盒專為測試無編碼器（Encoder-free）的 <strong>Gemma 4 12B Unified Multimodal</strong> 模型所設計。您可以在下方輸入文字對話，或上傳<strong>圖片</strong>與<strong>語音</strong>來測試多模態交互！
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="input-panel">
+          <!-- 上傳媒體預覽區 -->
+          <div class="media-preview-container" id="media-preview-container" style="display: none;">
+            <div class="media-preview-wrapper">
+              <img id="image-preview" src="" alt="圖片預覽" style="display: none;">
+              <div id="audio-preview-container" style="display: none;">
+                <span class="audio-icon">🎵</span>
+                <span id="audio-preview-name">語音檔案</span>
+                <audio id="audio-preview-player" controls></audio>
+              </div>
+              <button class="remove-media-btn" id="remove-media-btn">✕</button>
+            </div>
+          </div>
+
+          <div class="input-row">
+            <!-- 語音錄製按鈕 -->
+            <button class="icon-btn" id="record-btn" title="錄製語音">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                <line x1="12" y1="19" x2="12" y2="22"/>
+              </svg>
+              <span class="pulse-ring" id="record-pulse" style="display: none;"></span>
+            </button>
+
+            <!-- 媒體上傳按鈕 -->
+            <label class="icon-btn" id="upload-label" title="上傳圖片或語音 (WAV/MP3)">
+              <input type="file" id="media-upload" accept="image/*, audio/wav, audio/mp3" style="display: none;">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+              </svg>
+            </label>
+
+            <!-- 文字輸入框 -->
+            <textarea id="text-input" placeholder="輸入訊息，或將圖片/音檔拖曳至此處..." rows="1"></textarea>
+
+            <!-- 發送按鈕 -->
+            <button class="send-btn" id="send-btn" disabled>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="22" y1="2" x2="11" y2="13"/>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+              </svg>
+            </button>
+          </div>
+
+          <div class="input-info-row">
+            <span id="recording-time" style="display: none; color: #ff5252;">錄音中: 0.0s (最大 30s)</span>
+            <span class="hint-text">按 Enter 發送，Shift + Enter 換行</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 右邊：效能監控與思維鏈 (Thinking Chain) -->
+      <section class="right-section">
+        <!-- 即時思考過程 -->
+        <div class="panel thinking-panel">
+          <div class="panel-header">
+            <h3>🧠 模型即時思考鏈 (Thinking Process)</h3>
+          </div>
+          <div class="panel-content" id="thinking-content">
+            <div class="empty-state">等待對話啟動以顯示思維鏈...</div>
+          </div>
+        </div>
+
+        <!-- 效能與加速監控 -->
+        <div class="panel stats-panel">
+          <div class="panel-header">
+            <h3>⚡ MTP 加速與效能監控</h3>
+          </div>
+          <div class="panel-content">
+            <div class="stat-grid">
+              <div class="stat-card">
+                <div class="stat-title">生成速度</div>
+                <div class="stat-value" id="stat-speed">-</div>
+                <div class="stat-unit">tokens/s</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-title">MTP 接受率</div>
+                <div class="stat-value" id="stat-mtp-rate">-</div>
+                <div class="stat-unit">accepted/drafted</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-title">Prompt 標記數</div>
+                <div class="stat-value" id="stat-prompt-tokens">-</div>
+                <div class="stat-unit">tokens (含快取)</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-title">生成標記數</div>
+                <div class="stat-value" id="stat-gen-tokens">-</div>
+                <div class="stat-unit">tokens</div>
+              </div>
+            </div>
+
+            <div class="performance-log">
+              <h4>🔍 詳細推理時序 (Timings)</h4>
+              <div class="timing-list" id="timing-list">
+                <div class="empty-state">尚無數據</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

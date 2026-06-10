@@ -1,0 +1,547 @@
+:root {
+  --bg-color: #080710;
+  --panel-bg: rgba(255, 255, 255, 0.03);
+  --border-color: rgba(255, 255, 255, 0.08);
+  --border-focus: rgba(0, 242, 254, 0.4);
+  --text-main: #f5f5f7;
+  --text-muted: #8e8e93;
+  --accent-cyan: #00f2fe;
+  --accent-purple: #7f00ff;
+  --gradient-main: linear-gradient(135deg, #7f00ff 0%, #00f2fe 100%);
+  --message-user: linear-gradient(135deg, rgba(127, 0, 255, 0.2) 0%, rgba(0, 242, 254, 0.1) 100%);
+  --message-assistant: rgba(255, 255, 255, 0.02);
+  --font-sans: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* 霓虹背景光暈 */
+.glass-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  background: radial-gradient(circle at 10% 20%, rgba(127, 0, 255, 0.15) 0%, transparent 40%),
+              radial-gradient(circle at 90% 80%, rgba(0, 242, 254, 0.12) 0%, transparent 45%);
+}
+
+.app-container {
+  width: 96vw;
+  height: 94vh;
+  max-width: 1600px;
+  background: rgba(255, 255, 255, 0.01);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border: 1px solid var(--border-color);
+  border-radius: 24px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.5);
+}
+
+/* 頂部標題列 */
+.app-header {
+  padding: 20px 30px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-badge {
+  background: var(--gradient-main);
+  color: #000;
+  font-weight: 800;
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  border-radius: 30px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.logo-container h1 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  background: var(--gradient-main);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.server-config {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  padding: 8px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+}
+
+.server-config label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.server-config input {
+  background: transparent;
+  border: none;
+  color: var(--text-main);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  outline: none;
+  width: 180px;
+}
+
+.status-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ff3b30;
+  transition: background 0.3s;
+}
+
+.status-indicator.connected {
+  background: #34c759;
+  box-shadow: 0 0 10px #34c759;
+}
+
+#status-text {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* 主體區域 */
+.app-body {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+/* 左側：對話與輸入 */
+.left-section {
+  flex: 1.1;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border-color);
+  position: relative;
+}
+
+.chat-container {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.chat-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* 對話泡泡 */
+.message {
+  display: flex;
+  max-width: 85%;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.message.user {
+  align-self: flex-end;
+}
+
+.message.assistant {
+  align-self: flex-start;
+}
+
+.message-content {
+  padding: 16px 20px;
+  border-radius: 16px;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.message.user .message-content {
+  background: var(--message-user);
+  border: 1px solid rgba(0, 242, 254, 0.15);
+  border-bottom-right-radius: 4px;
+}
+
+.message.assistant .message-content {
+  background: var(--message-assistant);
+  border: 1px solid var(--border-color);
+  border-bottom-left-radius: 4px;
+}
+
+.message.system-message {
+  max-width: 100%;
+  align-self: center;
+}
+
+.message.system-message .message-content {
+  background: rgba(255, 255, 255, 0.01);
+  border: 1px dashed var(--border-color);
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.msg-media {
+  margin-top: 10px;
+  max-width: 100%;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+}
+
+.msg-media img {
+  max-width: 300px;
+  max-height: 200px;
+  display: block;
+}
+
+.msg-media audio {
+  display: block;
+  width: 280px;
+  margin: 5px 0;
+}
+
+/* 輸入面板 */
+.input-panel {
+  padding: 20px 24px;
+  border-top: 1px solid var(--border-color);
+  background: rgba(8, 7, 16, 0.6);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.media-preview-container {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-color);
+  padding: 10px 16px;
+  border-radius: 12px;
+  position: relative;
+}
+
+.media-preview-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+#image-preview {
+  max-height: 80px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+#audio-preview-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.audio-icon {
+  font-size: 1.5rem;
+}
+
+#audio-preview-name {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+#audio-preview-player {
+  height: 36px;
+  max-width: 220px;
+}
+
+.remove-media-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-main);
+  border: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+}
+
+.remove-media-btn:hover {
+  background: rgba(255, 82, 82, 0.2);
+  color: #ff5252;
+}
+
+.input-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 8px 16px;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.input-row:focus-within {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 15px rgba(0, 242, 254, 0.15);
+}
+
+.icon-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 10px;
+  transition: color 0.2s, background-color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.icon-btn:hover {
+  color: var(--accent-cyan);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+#record-btn.recording {
+  color: #ff5252 !important;
+  background: rgba(255, 82, 82, 0.1);
+}
+
+.pulse-ring {
+  position: absolute;
+  border: 2px solid #ff5252;
+  border-radius: 50%;
+  width: 100%;
+  height: 100%;
+  animation: pulse 1.2s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(0.9); opacity: 1; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+
+#text-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text-main);
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  resize: none;
+  outline: none;
+  max-height: 150px;
+  padding: 8px 0;
+  line-height: 1.5;
+}
+
+.send-btn {
+  background: var(--gradient-main);
+  border: none;
+  color: #000;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s, opacity 0.2s;
+}
+
+.send-btn:hover:not(:disabled) {
+  transform: scale(1.05);
+}
+
+.send-btn:disabled {
+  background: var(--border-color);
+  color: var(--text-muted);
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.input-info-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  padding: 0 4px;
+}
+
+/* 右側：思維鏈 & 監控 */
+.right-section {
+  flex: 0.9;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.panel {
+  background: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.thinking-panel {
+  flex: 1.2;
+}
+
+.stats-panel {
+  flex: 0.8;
+}
+
+.panel-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color);
+  background: rgba(255, 255, 255, 0.01);
+}
+
+.panel-header h3 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.panel-content {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  position: relative;
+}
+
+#thinking-content {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: #e4e4e7;
+  white-space: pre-wrap;
+  line-height: 1.6;
+}
+
+.empty-state {
+  display: flex;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+/* 效能網格 */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  background: rgba(255, 255, 255, 0.01);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.stat-title {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  background: var(--gradient-main);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.stat-unit {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.performance-log h4 {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.timing-list {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.timing-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 8px;
+  background: rgba(255, 255, 255, 0.01);
+  border-radius: 6px;
+}
+
+.timing-value {
+  color: var(--text-main);
+}

@@ -1,0 +1,8 @@
+# 忽略大型模型與投影檔
+lm-studio/
+llama.cpp/
+*.gguf
+*.log
+
+# 系統檔案
+.DS_Store
