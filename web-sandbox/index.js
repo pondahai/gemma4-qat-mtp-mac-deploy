@@ -36,6 +36,11 @@ const timingList = document.getElementById('timing-list');
 
 // 初始化
 window.addEventListener('DOMContentLoaded', () => {
+  // 自動偵測當前網頁的 Hostname / IP，將 llama-server 預設指向同一個主機的 8080 連接埠
+  const currentHost = window.location.hostname || '127.0.0.1';
+  serverUrlInput.value = `http://${currentHost}:8080`;
+  serverUrlInput.placeholder = `http://${currentHost}:8080`;
+
   checkServerConnection();
   setInterval(checkServerConnection, 5000); // 每5秒檢查一次連線
 
