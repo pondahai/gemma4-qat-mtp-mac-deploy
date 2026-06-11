@@ -37,7 +37,10 @@ const timingList = document.getElementById('timing-list');
 // 初始化
 window.addEventListener('DOMContentLoaded', () => {
   // 自動偵測當前網頁的 Hostname / IP，將 llama-server 預設指向同一個主機的 8080 連接埠
-  const currentHost = window.location.hostname || '127.0.0.1';
+  let currentHost = window.location.hostname || '127.0.0.1';
+  if (currentHost === 'localhost') {
+    currentHost = '127.0.0.1'; // 強制使用 IPv4 避開 macOS localhost 解析至 ::1 (IPv6) 的連線拒絕問題
+  }
   serverUrlInput.value = `http://${currentHost}:8080`;
   serverUrlInput.placeholder = `http://${currentHost}:8080`;
 
